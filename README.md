@@ -66,7 +66,7 @@ Open http://localhost:3000
 
 Usage
 Login - Enter your email to receive a magic link
-
+![Onboarding](Screenshots/onboarding.png)
 
 Dashboard - View your invoice statistics and recent activity
 https://screenshots/dashboard.png
