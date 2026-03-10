@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Invoice Generator
 
-## Getting Started
+A full-stack web application for creating, managing, and tracking professional invoices. Built with Next.js, MongoDB, and Auth.js.
 
-First, run the development server:
+## Features
 
-```bash
+- **User Authentication** - Secure email-based magic link login
+- **Invoice Management** - Create, edit, and delete invoices
+- **Dashboard Analytics** - Track total revenue, paid/unpaid invoices
+- **Email Integration** - Send invoices directly to clients
+- **PDF Generation** - Export invoices as PDF
+- **Responsive Design** - Works on desktop and mobile
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Database**: MongoDB with Mongoose
+- **Authentication**: Auth.js (NextAuth)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Email**: Nodemailer (Gmail SMTP)
+- **Deployment**: Vercel (recommended)
+
+## Prerequisites
+
+- Node.js 18+ 
+- MongoDB database (local or Atlas)
+- Gmail account for email service
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Authentication (required for Auth.js)
+# Generate a secure random string using: openssl rand -base64 32
+AUTH_SECRET=your-generated-secret-key-here
+
+# Database
+MONGODB_URI=your-mongodb-connection-string
+
+# Email (Gmail)
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-app-specific-password
+
+# Optional: Set this for production
+NEXTAUTH_URL=http://localhost:3000
+
+💻 Installation
+
+Clone the repository
+git clone https://github.com/yourusername/invoice-generator.git
+cd invoice-generator
+
+Install dependencies
+
+bash
+npm install
+Set up environment variables (see above)
+
+Run the development server
+
+bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Open http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Usage
+Login - Enter your email to receive a magic link
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Dashboard - View your invoice statistics and recent activity
+https://screenshots/dashboard.png
 
-## Learn More
+Create Invoice - Fill in client details, items, and amounts
 
-To learn more about Next.js, take a look at the following resources:
+Manage Invoices - Edit, delete, or mark invoices as paid
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Send Emails - Email invoices directly to clients
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Settings - Upload logo and signature for branding

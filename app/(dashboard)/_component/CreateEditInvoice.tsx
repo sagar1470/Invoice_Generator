@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { InvoiceSchemaZod } from "@/lib/zodSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, DeleteIcon } from "lucide-react";
+import { CalendarIcon, DeleteIcon, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,7 +25,7 @@ interface ICreateEditInvoice {
   lastName?: string | undefined;
   email?: string | undefined | null;
   currency?: string | undefined;
-  invoiceId?: string | undefined; //for edit section
+  invoiceId?: string | undefined;
 }
 
 export default function CreateEditInvoice({
@@ -33,7 +33,7 @@ export default function CreateEditInvoice({
   lastName,
   email,
   currency,
-  invoiceId, //
+  invoiceId,
 }: ICreateEditInvoice) {
   const {
     register,
@@ -56,7 +56,7 @@ export default function CreateEditInvoice({
         },
       ],
       from: {
-        name: `${firstName} ${lastName}`,
+        name: `${firstName || ""} ${lastName || ""}`.trim(),
         email: email as string,
       },
       tax_percentage: 0,
@@ -89,35 +89,29 @@ export default function CreateEditInvoice({
     }
   };
 
-  //edit component
   useEffect(() => {
     if (invoiceId) {
       fetchData();
     }
   }, [invoiceId]);
 
-  //items
   const { fields, append, remove } = useFieldArray({
     control,
     name: "items",
   });
 
-  //total of items
   const items = watch("items");
   useEffect(() => {
     items.forEach((item, index) => {
       const quantity = parseFloat(item.quantity.toString()) || 0;
       const price = parseFloat(item.price.toString()) || 0;
-
       const total = quantity * price;
-
       setValue(`items.${index}.total`, total);
     });
-    const sub_total = items.reduce((preve, curr) => preve + curr.total, 0);
+    const sub_total = items.reduce((prev, curr) => prev + curr.total, 0);
     setValue("sub_total", sub_total);
   }, [JSON.stringify(items), setValue]);
 
-  //add new item row
   const handleAddNewItemRow = (e: any) => {
     e.preventDefault();
     append({
@@ -127,15 +121,12 @@ export default function CreateEditInvoice({
       total: 0,
     });
   };
-  //remove item row
+
   const handleRemoveItem = (index: number) => {
     remove(index);
   };
 
   const onSubmit = async (data: z.infer<typeof InvoiceSchemaZod>) => {
-    
-
-    //for create invoice
     if (!invoiceId) {
       setIsLoading(true);
       const response = await fetch("/api/invoice", {
@@ -154,7 +145,6 @@ export default function CreateEditInvoice({
       return;
     }
 
-    //for edit invoice
     try {
       setIsLoading(true);
       const response = await fetch("/api/invoice", {
@@ -168,7 +158,7 @@ export default function CreateEditInvoice({
 
       if (response.status === 200) {
         toast.success("Invoice updated Successfully");
-        router.push("/invoice")
+        router.push("/invoice");
       } else {
         toast.error("Something went wrong");
       }
@@ -197,44 +187,47 @@ export default function CreateEditInvoice({
 
   return (
     <form
-      className="grid py-4 gap-4 lg:gap-6"
+      className="space-y-6 py-4"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <div className="grid grid-cols-2 gap-4 lg:gap-6">
-        <div className="grid">
+      {/* Invoice Header */}
+      <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="invoice_no">Invoice Number</Label>
           <div className="flex items-center">
-            <div className="min-w-9 min-h-9 text-center border h-full flex justify-center items-center bg-neutral-100 rounded-l-md ">
+            <div className="h-10 w-10 border border-r-0 rounded-l-md bg-muted flex items-center justify-center text-muted-foreground">
               #
             </div>
             <Input
+              id="invoice_no"
               type="text"
-              placeholder="Invoice No."
-              className="rounded-l-none"
+              placeholder="INV-001"
+              className="rounded-l-none h-10"
               {...register("invoice_no", { required: true })}
               disabled={isLoading}
             />
           </div>
           {errors?.invoice_no && (
-            <p className="text-xs text-red-500">{errors.invoice_no.message}</p>
+            <p className="text-xs text-destructive">{errors.invoice_no.message}</p>
           )}
         </div>
 
-        <div></div>
+        <div className="md:col-start-2"></div>
 
-        <div className="grid">
+        <div className="space-y-2">
+          <Label>Invoice Date</Label>
           <div className="flex items-center">
-            <div className="min-w-9 min-h-9 text-center border h-full flex justify-center items-center bg-neutral-100 rounded-l-md ">
+            <div className="h-10 w-10 border border-r-0 rounded-l-md bg-muted flex items-center justify-center text-muted-foreground">
               <CalendarIcon className="size-4" />
             </div>
             <Popover>
-              <PopoverTrigger className="w-full" asChild>
+              <PopoverTrigger asChild>
                 <Button
                   type="button"
                   variant={"outline"}
                   className={cn(
-                    "pl-3 text-left font-normal",
-                    !getValues("invoice_date") && "text-muted-foreground",
-                    "justify-start font-normal rounded-l-none flex-1 w-full "
+                    "w-full justify-start text-left font-normal h-10 rounded-l-none",
+                    !getValues("invoice_date") && "text-muted-foreground"
                   )}
                   disabled={isLoading}
                 >
@@ -245,7 +238,7 @@ export default function CreateEditInvoice({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent>
+              <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
                   selected={getValues("invoice_date")}
@@ -257,31 +250,30 @@ export default function CreateEditInvoice({
                   disabled={(date) =>
                     date > new Date() || date < new Date("1900-01-01")
                   }
+                  initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
           {errors?.invoice_date && (
-            <p className="text-xs text-red-500">
-              {errors.invoice_date.message}
-            </p>
+            <p className="text-xs text-destructive">{errors.invoice_date.message}</p>
           )}
         </div>
 
-        <div className="grid">
+        <div className="space-y-2">
+          <Label>Due Date</Label>
           <div className="flex items-center">
-            <div className="min-w-9 min-h-9 text-center border h-full flex justify-center items-center bg-neutral-100 rounded-l-md ">
+            <div className="h-10 w-10 border border-r-0 rounded-l-md bg-muted flex items-center justify-center text-muted-foreground">
               <CalendarIcon className="size-4" />
             </div>
             <Popover>
-              <PopoverTrigger className="w-full" asChild>
+              <PopoverTrigger asChild>
                 <Button
                   type="button"
                   variant={"outline"}
                   className={cn(
-                    "pl-3 text-left font-normal",
-                    !watch("due_date") && "text-muted-foreground",
-                    "justify-start font-normal rounded-l-none flex-1 w-full "
+                    "w-full justify-start text-left font-normal h-10 rounded-l-none",
+                    !watch("due_date") && "text-muted-foreground"
                   )}
                   disabled={isLoading}
                 >
@@ -292,7 +284,7 @@ export default function CreateEditInvoice({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent>
+              <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
                   selected={watch("due_date")}
@@ -304,335 +296,353 @@ export default function CreateEditInvoice({
                   disabled={(date) =>
                     date < new Date() || date < new Date("1900-01-01")
                   }
+                  initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
           {errors?.due_date && (
-            <p className="text-xs text-red-500">{errors.due_date.message}</p>
+            <p className="text-xs text-destructive">{errors.due_date.message}</p>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:gap-6">
-        {/**from (current user details) */}
-        <div className="grid gap-2">
-          <Label>From</Label>
-          <div>
-            <Input
-              type="text"
-              placeholder="From name"
-              {...register("from.name", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.from?.name && (
-              <p className="text-xs text-red-500">{errors.from.name.message}</p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="joe@example.com"
-              {...register("from.email", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.from?.email && (
-              <p className="text-xs text-red-500">
-                {errors.from.email.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="Bldg No. / Flat No. / Shop No. / Building Name"
-              {...register("from.address1", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.from?.address1 && (
-              <p className="text-xs text-red-500">
-                {errors.from.address1.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="Street name / Landmark"
-              {...register("from.address2", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.from?.address2 && (
-              <p className="text-xs text-red-500">
-                {errors.from.address2.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="City / State / Country / Pincode "
-              {...register("from.address3", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.from?.address3 && (
-              <p className="text-xs text-red-500">
-                {errors.from.address3.message}
-              </p>
-            )}
+      {/* From & To Sections */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">From</Label>
+          <div className="space-y-3">
+            <div>
+              <Input
+                type="text"
+                placeholder="Your name"
+                {...register("from.name", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.from?.name && (
+                <p className="text-xs text-destructive mt-1">{errors.from.name.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="your@email.com"
+                {...register("from.email", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.from?.email && (
+                <p className="text-xs text-destructive mt-1">{errors.from.email.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="Address line 1"
+                {...register("from.address1", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.from?.address1 && (
+                <p className="text-xs text-destructive mt-1">{errors.from.address1.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="Address line 2"
+                {...register("from.address2", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.from?.address2 && (
+                <p className="text-xs text-destructive mt-1">{errors.from.address2.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="City, State, ZIP"
+                {...register("from.address3", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.from?.address3 && (
+                <p className="text-xs text-destructive mt-1">{errors.from.address3.message}</p>
+              )}
+            </div>
           </div>
         </div>
 
-        {/**to (client details) */}
-        <div className="grid gap-2">
-          <Label>To</Label>
-          <div>
-            <Input
-              type="text"
-              placeholder="To name"
-              {...register("to.name", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.to?.name && (
-              <p className="text-xs text-red-500">{errors.to.name.message}</p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="joe@example.com"
-              {...register("to.email", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.to?.email && (
-              <p className="text-xs text-red-500">{errors.to.email.message}</p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="Bldg No. / Flat No. / Shop No. / Building Name"
-              {...register("to.address1", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.to?.address1 && (
-              <p className="text-xs text-red-500">
-                {errors.to.address1.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="Street name / Landmark"
-              {...register("to.address2", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.to?.address2 && (
-              <p className="text-xs text-red-500">
-                {errors.to.address2.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="City / State / Country / Pincode "
-              {...register("to.address3", { required: true })}
-              disabled={isLoading}
-            />
-            {errors.to?.address3 && (
-              <p className="text-xs text-red-500">
-                {errors.to.address3.message}
-              </p>
-            )}
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">To</Label>
+          <div className="space-y-3">
+            <div>
+              <Input
+                type="text"
+                placeholder="Client name"
+                {...register("to.name", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.to?.name && (
+                <p className="text-xs text-destructive mt-1">{errors.to.name.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="client@email.com"
+                {...register("to.email", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.to?.email && (
+                <p className="text-xs text-destructive mt-1">{errors.to.email.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="Address line 1"
+                {...register("to.address1", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.to?.address1 && (
+                <p className="text-xs text-destructive mt-1">{errors.to.address1.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="Address line 2"
+                {...register("to.address2", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.to?.address2 && (
+                <p className="text-xs text-destructive mt-1">{errors.to.address2.message}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="City, State, ZIP"
+                {...register("to.address3", { required: true })}
+                disabled={isLoading}
+              />
+              {errors.to?.address3 && (
+                <p className="text-xs text-destructive mt-1">{errors.to.address3.message}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/**item details */}
-      <div className="grid gap-2">
-        <div className="grid grid-cols-6 bg-neutral-50 py-1 px-1 gap-2">
-          <div className="col-span-3">Item</div>
-          <div>Quantity</div>
-          <div>Price</div>
-          <div>Total</div>
+      {/* Items Section */}
+      <div className="space-y-4">
+        <Label className="text-base font-semibold">Items</Label>
+        
+        {/* Items Header - Hidden on mobile */}
+        <div className="hidden md:grid grid-cols-12 gap-4 px-1 py-2 bg-muted/50 rounded-md text-sm font-medium">
+          <div className="col-span-5">Item</div>
+          <div className="col-span-2">Quantity</div>
+          <div className="col-span-2">Price</div>
+          <div className="col-span-2">Total</div>
+          <div className="col-span-1"></div>
         </div>
 
-        {fields.map((item, index) => {
-          return (
-            <div className="grid grid-cols-6 gap-2" key={index}>
-              <div className="col-span-3">
+        {/* Items List */}
+        <div className="space-y-3">
+          {fields.map((item, index) => (
+            <div key={item.id} className="grid md:grid-cols-12 gap-3 items-start">
+              <div className="md:col-span-5">
+                <Label className="md:hidden text-xs mb-1">Item Name</Label>
                 <Input
-                  placeholder="Enter item name"
+                  placeholder="Item name"
                   type="text"
                   {...register(`items.${index}.item_name`, { required: true })}
                   disabled={isLoading}
                 />
                 {errors.items && errors.items[index]?.item_name && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive mt-1">
                     {errors.items[index]?.item_name.message}
                   </p>
                 )}
               </div>
-              <div>
+              
+              <div className="md:col-span-2">
+                <Label className="md:hidden text-xs mb-1">Quantity</Label>
                 <Input
-                  placeholder="Enter quantity"
+                  placeholder="Qty"
                   {...register(`items.${index}.quantity`, {
                     required: true,
                     valueAsNumber: true,
                   })}
                   type="number"
+                  min="0"
+                  step="0.01"
                   disabled={isLoading}
                 />
                 {errors.items && errors.items[index]?.quantity && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive mt-1">
                     {errors.items[index]?.quantity.message}
                   </p>
                 )}
               </div>
-              <div>
+              
+              <div className="md:col-span-2">
+                <Label className="md:hidden text-xs mb-1">Price</Label>
                 <Input
-                  placeholder="Enter price"
+                  placeholder="Price"
                   {...register(`items.${index}.price`, {
                     required: true,
                     valueAsNumber: true,
                   })}
                   type="number"
+                  min="0"
+                  step="0.01"
                   disabled={isLoading}
                 />
                 {errors.items && errors.items[index]?.price && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-destructive mt-1">
                     {errors.items[index]?.price.message}
                   </p>
                 )}
               </div>
-              <div className="relative ">
+              
+              <div className="md:col-span-2">
+                <Label className="md:hidden text-xs mb-1">Total</Label>
                 <Input
-                  placeholder="Enter total"
+                  placeholder="Total"
                   {...register(`items.${index}.total`, {
                     required: true,
                     valueAsNumber: true,
                   })}
                   type="number"
                   disabled
+                  className="bg-muted"
                 />
-                {errors.items && errors.items[index]?.total && (
-                  <p className="text-xs text-red-500">
-                    {errors.items[index]?.total.message}
-                  </p>
-                )}
+              </div>
+              
+              <div className="md:col-span-1 flex justify-end">
                 {index !== 0 && (
-                  <div className="absolute top-0 right-0">
-                    <Button
-                      type="button"
-                      variant={"ghost"}
-                      size={"icon"}
-                      className="bg-red-50 text-red-500"
-                      onClick={() => handleRemoveItem(index)}
-                      disabled={isLoading}
-                    >
-                      <DeleteIcon />
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleRemoveItem(index)}
+                    disabled={isLoading}
+                  >
+                    <DeleteIcon className="size-4" />
+                  </Button>
                 )}
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
 
         <Button
           type="button"
+          variant="outline"
+          size="sm"
           disabled={isLoading}
-          className="w-fit"
           onClick={handleAddNewItemRow}
+          className="gap-2"
         >
+          <PlusCircle className="size-4" />
           Add Item
         </Button>
       </div>
 
-      {/**sub total , discount, tax, total */}
-      <div>
-        <div className="max-w-sm w-full ml-auto grid gap-2">
-          <div className="grid grid-cols-2">
-            <Label>Sub total : </Label>
+      {/* Calculations */}
+      <div className="border-t pt-4">
+        <div className="max-w-sm ml-auto space-y-3">
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <Label className="text-right">Sub total:</Label>
             <Input
               disabled
-              placeholder="Sub total"
-              type="number"
-              {...register("sub_total", { valueAsNumber: true })}
+              value={sub_total || ""}
+              className="bg-muted text-right"
+              readOnly
             />
           </div>
-          <div className="grid grid-cols-2">
-            <Label>Discount : </Label>
+          
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <Label className="text-right">Discount:</Label>
             <Input
-              placeholder="discount"
+              placeholder="0"
               type="number"
+              min="0"
+              step="0.01"
               {...register("discount", { valueAsNumber: true })}
               disabled={isLoading}
+              className="text-right"
             />
           </div>
-          <div className="grid grid-cols-2">
-            <Label> </Label>
+          
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <Label className="text-right"></Label>
             <Input
-              placeholder="Sub total"
-              type="number"
-              value={sub_totalRemoveDiscount ?? ""}
+              value={sub_totalRemoveDiscount || ""}
               disabled
+              className="bg-muted text-right"
             />
           </div>
-          <div className="grid grid-cols-2">
-            <Label>
-              Tax:{" "}
+          
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <Label className="text-right flex items-center justify-end gap-2">
+              Tax:
               <Input
                 placeholder="%"
-                type="text"
-                className="min-w-14 w-14 max-w-14"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                className="w-16 text-right"
                 {...register("tax_percentage", { valueAsNumber: true })}
                 disabled={isLoading}
               />
-              %{" "}
+              %
             </Label>
             <Input
-              placeholder="tax amount"
-              type="number"
-              value={taxAmount}
+              value={taxAmount || ""}
               disabled
+              className="bg-muted text-right"
             />
-            {errors.tax_percentage && (
-              <p className="text-xs text-red-500 block">
-                {errors.tax_percentage.message}
-              </p>
-            )}
           </div>
-          <div className="grid grid-cols-2">
-            <Label>Total</Label>
+          {errors.tax_percentage && (
+            <p className="text-xs text-destructive text-right">{errors.tax_percentage.message}</p>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4 items-center pt-2 border-t">
+            <Label className="text-right font-bold">Total</Label>
             <Input
-              placeholder="Total"
-              type="number"
-              className="font-semibold"
-              // value={totalAmount ?? ""}
+              value={totalAmount || ""}
               disabled
-              {...register("total", { valueAsNumber: true })}
+              className="bg-primary/10 text-primary font-bold text-right"
             />
           </div>
-          <div className="flex items-center justify-center min-h-14 font-bold text-lg">
+          
+          <div className="text-right text-lg font-bold text-primary">
             {totalAmountInCurrencyFormat}
           </div>
         </div>
       </div>
 
-      {/**notes */}
-      <div className="grid gap-2 max-w-xl">
-        <Label>Notes:</Label>
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes</Label>
         <Textarea
+          id="notes"
           disabled={isLoading}
-          placeholder="Enter your notes"
+          placeholder="Add any additional notes here..."
+          className="resize-none"
           {...register("notes")}
         />
       </div>
 
-      <Button size={"lg"}>
+      {/* Submit Button */}
+      <Button 
+        type="submit" 
+        size="lg" 
+        disabled={isLoading}
+        className="w-full md:w-auto"
+      >
         {isLoading ? "Please wait..." : invoiceId ? "Update Invoice" : "Create Invoice"}
       </Button>
     </form>
