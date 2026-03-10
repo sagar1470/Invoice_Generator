@@ -64,17 +64,20 @@ bash
 npm run dev
 Open http://localhost:3000
 
-Usage
+## Usage
 Login - Enter your email to receive a magic link
 ![Onboarding](Screenshots/onboarding.png)
 
 Dashboard - View your invoice statistics and recent activity
-https://screenshots/dashboard.png
+![Dashboard](Screenshots/dashboard.png)
 
 Create Invoice - Fill in client details, items, and amounts
+![Invoice](Screenshots/invoice-form.png)
 
 Manage Invoices - Edit, delete, or mark invoices as paid
 
 Send Emails - Email invoices directly to clients
+![Email](Screenshots/email-template.png)
 
 Settings - Upload logo and signature for branding
+![Setting](Screenshots/settings.png)
