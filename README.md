@@ -27,6 +27,26 @@ A full-stack web application for creating, managing, and tracking professional i
 - MongoDB database (local or Atlas)
 - Gmail account for email service
 
+## Screenshots
+
+
+###Login - Enter your email to receive a magic link
+![Onboarding](Screenshots/onboarding.png)
+
+###Dashboard - View your invoice statistics and recent activity
+![Dashboard](Screenshots/dashboard.png)
+
+###Create Invoice - Fill in client details, items, and amounts
+![Invoice](Screenshots/invoice-form.png)
+
+ Manage Invoices - Edit, delete, or mark invoices as paid
+
+###Send Emails - Email invoices directly to clients
+![Email](Screenshots/email-template.png)
+
+###Settings - Upload logo and signature for branding
+![Setting](Screenshots/settings.png)
+
 ## Environment Variables
 
 Create a `.env.local` file in the root directory:
@@ -64,20 +84,3 @@ bash
 npm run dev
 Open http://localhost:3000
 
-## Screenshots
- ###Login - Enter your email to receive a magic link
-![Onboarding](Screenshots/onboarding.png)
-
- ###Dashboard - View your invoice statistics and recent activity
-![Dashboard](Screenshots/dashboard.png)
-
- ###Create Invoice - Fill in client details, items, and amounts
-![Invoice](Screenshots/invoice-form.png)
-
- Manage Invoices - Edit, delete, or mark invoices as paid
-
- ###Send Emails - Email invoices directly to clients
-![Email](Screenshots/email-template.png)
-
- ###Settings - Upload logo and signature for branding
-![Setting](Screenshots/settings.png)
