@@ -37,7 +37,15 @@ export default function Home() {
           />
         </div>
       </main>
-      
+
+       <footer className="bg-primary text-white flex justify-center items-center py-8">
+        <p className="font-semibold text-lg">
+          Made by{" "}
+          <Link href={"https://www.linkedin.com/in/sagar-bist-8a787723b?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"} className="italic hover:underline cursor-pointer">
+            Sagar Bista
+          </Link>
+        </p>
+      </footer>
     </>
   );
 }
